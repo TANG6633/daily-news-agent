@@ -12,17 +12,17 @@ def summarize_articles(
     model: str,
 ) -> Tuple[List[str], Dict[str, str], str]:
     if not articles:
-        return ["今天没有抓取到符合条件的新闻。"], {}, "no articles"
+        return [_empty_highlight(language)], {}, "no articles"
 
     if os.getenv("OPENAI_API_KEY"):
         try:
             return _summarize_with_openai(articles, language=language, model=model)
         except Exception as exc:  # pragma: no cover - external service
-            highlights, summaries = _summarize_locally(articles)
-            return highlights, summaries, "OpenAI summary failed; used local fallback: %s" % exc
+            highlights, summaries = _summarize_locally(articles, language)
+            return highlights, summaries, _fallback_note(language, str(exc))
 
-    highlights, summaries = _summarize_locally(articles)
-    return highlights, summaries, "local fallback; set OPENAI_API_KEY for richer summaries"
+    highlights, summaries = _summarize_locally(articles, language)
+    return highlights, summaries, _local_note(language)
 
 
 def _summarize_with_openai(
@@ -50,7 +50,7 @@ def _summarize_with_openai(
         "Highlights should explain the most important cross-story signals. "
         "Each item summary should be one or two short sentences, neutral, and based only on the supplied text.\n\n"
         "Articles:\n%s"
-        % (language, json.dumps(payload, ensure_ascii=False))
+        % (_language_name(language), json.dumps(payload, ensure_ascii=False))
     )
 
     text = _call_openai(client, model, prompt)
@@ -64,12 +64,12 @@ def _summarize_with_openai(
         if url and summary:
             item_summaries[url] = summary
 
-    _, fallback_summaries = _summarize_locally(articles)
+    _, fallback_summaries = _summarize_locally(articles, language)
     for article in articles:
         item_summaries.setdefault(article.url, fallback_summaries[article.url])
 
     if not highlights:
-        highlights, _ = _summarize_locally(articles)
+        highlights, _ = _summarize_locally(articles, language)
 
     return highlights[:6], item_summaries, "openai:%s" % model
 
@@ -97,10 +97,13 @@ def _call_openai(client: object, model: str, prompt: str) -> str:
     return response.choices[0].message.content or ""
 
 
-def _summarize_locally(articles: Sequence[Article]) -> Tuple[List[str], Dict[str, str]]:
+def _summarize_locally(articles: Sequence[Article], language: str) -> Tuple[List[str], Dict[str, str]]:
     highlights = []
     for article in articles[:5]:
-        highlights.append("%s: %s" % (article.source, _shorten(article.title, 90)))
+        if language == "zh":
+            highlights.append("%s：%s" % (article.source, _shorten(article.title, 90)))
+        else:
+            highlights.append("%s: %s" % (article.source, _shorten(article.title, 90)))
 
     summaries: Dict[str, str] = {}
     for article in articles:
@@ -108,6 +111,31 @@ def _summarize_locally(articles: Sequence[Article]) -> Tuple[List[str], Dict[str
         summaries[article.url] = _shorten(_first_sentence(seed), 220)
 
     return highlights, summaries
+
+
+def _language_name(language: str) -> str:
+    return {
+        "zh": "Simplified Chinese",
+        "en": "English",
+    }.get(language, language)
+
+
+def _empty_highlight(language: str) -> str:
+    if language == "zh":
+        return "今天没有抓取到符合条件的新闻。"
+    return "No eligible news articles were collected today."
+
+
+def _local_note(language: str) -> str:
+    if language == "zh":
+        return "本地摘要模式；设置 OPENAI_API_KEY 可生成更完整的双语摘要"
+    return "local fallback; set OPENAI_API_KEY for richer bilingual summaries"
+
+
+def _fallback_note(language: str, error: str) -> str:
+    if language == "zh":
+        return "OpenAI 摘要失败，已使用本地摘要模式：%s" % error
+    return "OpenAI summary failed; used local fallback: %s" % error
 
 
 def _parse_json(text: str) -> Dict[str, object]:

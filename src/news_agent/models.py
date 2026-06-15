@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 
@@ -14,8 +14,8 @@ class SourceConfig:
 
 @dataclass(frozen=True)
 class AgentConfig:
-    title: str
-    language: str
+    titles: Mapping[str, str]
+    languages: Sequence[str]
     timezone: str
     lookback_hours: int
     max_items: int

@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from .models import AgentConfig, SourceConfig
 
@@ -13,11 +13,12 @@ def load_config(path: str) -> AgentConfig:
         raise ValueError("config must contain at least one source")
 
     timezone = os.getenv("NEWS_AGENT_TIMEZONE", raw.get("timezone", "Asia/Tokyo"))
-    language = os.getenv("NEWS_AGENT_LANGUAGE", raw.get("language", "zh"))
+    languages = _load_languages(raw)
+    titles = _load_titles(raw)
 
     return AgentConfig(
-        title=str(raw.get("title", "Daily News Digest")),
-        language=language,
+        titles=titles,
+        languages=languages,
         timezone=timezone,
         lookback_hours=int(raw.get("lookback_hours", 24)),
         max_items=int(raw.get("max_items", 15)),
@@ -38,3 +39,32 @@ def _source_from_dict(item: Dict[str, Any]) -> SourceConfig:
         section=str(item.get("section", "general")).strip() or "general",
         weight=float(item.get("weight", 1.0)),
     )
+
+
+def _load_languages(raw: Dict[str, Any]) -> List[str]:
+    env_value = os.getenv("NEWS_AGENT_LANGUAGES") or os.getenv("NEWS_AGENT_LANGUAGE")
+    if env_value:
+        languages = [part.strip() for part in env_value.split(",")]
+    else:
+        configured = raw.get("languages", raw.get("language", ["zh", "en"]))
+        if isinstance(configured, str):
+            languages = [configured]
+        else:
+            languages = [str(item).strip() for item in configured]
+
+    languages = [language for language in languages if language]
+    if not languages:
+        raise ValueError("config must contain at least one language")
+    return languages
+
+
+def _load_titles(raw: Dict[str, Any]) -> Dict[str, str]:
+    titles = raw.get("titles")
+    if isinstance(titles, dict):
+        return {str(key): str(value) for key, value in titles.items()}
+
+    title = str(raw.get("title", "Daily News Digest"))
+    return {
+        "zh": title if title != "Daily News Digest" else "每日新闻总结",
+        "en": "Daily News Digest",
+    }

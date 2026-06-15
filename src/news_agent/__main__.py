@@ -33,35 +33,41 @@ def main() -> int:
         max_per_source=config.max_per_source,
     )
     ranked = rank_articles(articles, limit=config.max_items)
-    highlights, summaries, summary_note = summarize_articles(
-        ranked,
-        language=config.language,
-        model=model,
-    )
+    rendered = []
+    for language in config.languages:
+        highlights, summaries, summary_note = summarize_articles(
+            ranked,
+            language=language,
+            model=model,
+        )
 
-    digest = Digest(
-        title=config.title,
-        date=report_date,
-        generated_at=now,
-        timezone=config.timezone,
-        language=config.language,
-        highlights=highlights,
-        article_summaries=summaries,
-        articles=ranked,
-        fetch_errors=fetch_errors,
-        summary_note=summary_note,
-    )
-    markdown = render_markdown(digest)
+        digest = Digest(
+            title=_title_for_language(config.titles, language),
+            date=report_date,
+            generated_at=now,
+            timezone=config.timezone,
+            language=language,
+            highlights=highlights,
+            article_summaries=summaries,
+            articles=ranked,
+            fetch_errors=fetch_errors,
+            summary_note=summary_note,
+        )
+        rendered.append((language, render_markdown(digest)))
 
     if args.dry_run:
-        print(markdown)
+        for language, markdown in rendered:
+            print("<!-- language: %s -->" % language)
+            print(markdown)
         return 0
 
     output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / ("%s.md" % report_date)
-    output_path.write_text(markdown, encoding="utf-8")
-    print("Wrote %s with %s articles." % (output_path, len(ranked)))
+    for language, markdown in rendered:
+        language_dir = output_dir / language if len(rendered) > 1 else output_dir
+        language_dir.mkdir(parents=True, exist_ok=True)
+        output_path = language_dir / ("%s.md" % report_date)
+        output_path.write_text(markdown, encoding="utf-8")
+        print("Wrote %s with %s articles." % (output_path, len(ranked)))
     return 0
 
 
@@ -71,6 +77,12 @@ def _load_dotenv() -> None:
     except ImportError:
         return
     load_dotenv()
+
+
+def _title_for_language(titles: object, language: str) -> str:
+    if isinstance(titles, dict) and language in titles:
+        return str(titles[language])
+    return "每日新闻总结" if language == "zh" else "Daily News Digest"
 
 
 if __name__ == "__main__":
