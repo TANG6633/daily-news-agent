@@ -17,6 +17,7 @@ reports/en/YYYY-MM-DD.md
 - 优先使用 OpenAI 生成更自然的中英双语摘要
 - 没有 `OPENAI_API_KEY` 时自动退回到本地规则摘要
 - 自动把当天日报提交回仓库
+- 配置邮件后，会把当天日报正文发送到指定邮箱
 
 ### 本地运行
 
@@ -65,6 +66,26 @@ NEWS_AGENT_LANGUAGES=zh,en
 
 不设置 secret 也能运行，只是摘要会更简洁。
 
+如需每天通过邮件接收日报，在同一个页面新增这些 secrets：
+
+```text
+NEWS_AGENT_EMAIL_TO=收件邮箱，多个地址用逗号分隔
+NEWS_AGENT_EMAIL_FROM=发件邮箱
+NEWS_AGENT_SMTP_HOST=smtp.gmail.com
+NEWS_AGENT_SMTP_USERNAME=SMTP 用户名，通常是发件邮箱
+NEWS_AGENT_SMTP_PASSWORD=SMTP 密码或邮箱应用专用密码
+```
+
+可选 variables：
+
+```text
+NEWS_AGENT_SMTP_PORT=587
+NEWS_AGENT_SMTP_STARTTLS=true
+NEWS_AGENT_EMAIL_SUBJECT=Daily News Digest / 每日新闻总结 - {date}
+```
+
+不要把 SMTP 密码写进代码或 `.env.example` 以外的仓库文件。使用 Gmail 时通常需要创建 App Password，不能直接使用普通登录密码。
+
 ### 手动触发
 
 在 GitHub 仓库页面：
@@ -90,6 +111,7 @@ Default behavior:
 - Uses OpenAI first for richer bilingual summaries
 - Falls back to local rule-based summaries when `OPENAI_API_KEY` is not configured
 - Commits the generated daily reports back to the repository
+- Sends the report body by email when SMTP settings are configured
 
 ### Run Locally
 
@@ -137,6 +159,26 @@ To enable OpenAI summaries on GitHub:
 3. Add a secret named `OPENAI_API_KEY`
 
 The workflow still runs without the secret, using local fallback summaries.
+
+To receive the daily reports by email, add these secrets on the same page:
+
+```text
+NEWS_AGENT_EMAIL_TO=recipient email address; use commas for multiple addresses
+NEWS_AGENT_EMAIL_FROM=sender email address
+NEWS_AGENT_SMTP_HOST=smtp.gmail.com
+NEWS_AGENT_SMTP_USERNAME=SMTP username, usually the sender email
+NEWS_AGENT_SMTP_PASSWORD=SMTP password or email app password
+```
+
+Optional variables:
+
+```text
+NEWS_AGENT_SMTP_PORT=587
+NEWS_AGENT_SMTP_STARTTLS=true
+NEWS_AGENT_EMAIL_SUBJECT=Daily News Digest / 每日新闻总结 - {date}
+```
+
+Do not commit SMTP passwords to the repository. Gmail usually requires an App Password instead of your normal account password.
 
 ### Manual Run
 

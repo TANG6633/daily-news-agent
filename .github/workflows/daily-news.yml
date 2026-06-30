@@ -32,7 +32,15 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
           NEWS_AGENT_TIMEZONE: Asia/Tokyo
           NEWS_AGENT_LANGUAGES: zh,en
-        run: daily-news-agent
+          NEWS_AGENT_EMAIL_TO: ${{ secrets.NEWS_AGENT_EMAIL_TO }}
+          NEWS_AGENT_EMAIL_FROM: ${{ secrets.NEWS_AGENT_EMAIL_FROM }}
+          NEWS_AGENT_EMAIL_SUBJECT: ${{ vars.NEWS_AGENT_EMAIL_SUBJECT || 'Daily News Digest / 每日新闻总结 - {date}' }}
+          NEWS_AGENT_SMTP_HOST: ${{ secrets.NEWS_AGENT_SMTP_HOST }}
+          NEWS_AGENT_SMTP_PORT: ${{ vars.NEWS_AGENT_SMTP_PORT || '587' }}
+          NEWS_AGENT_SMTP_USERNAME: ${{ secrets.NEWS_AGENT_SMTP_USERNAME }}
+          NEWS_AGENT_SMTP_PASSWORD: ${{ secrets.NEWS_AGENT_SMTP_PASSWORD }}
+          NEWS_AGENT_SMTP_STARTTLS: ${{ vars.NEWS_AGENT_SMTP_STARTTLS || 'true' }}
+        run: daily-news-agent --email
 
       - name: Commit digest
         run: |
