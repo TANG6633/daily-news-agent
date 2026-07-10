@@ -1,10 +1,10 @@
-# Daily News Agent / 每日新闻 Agent
+# Daily Intelligence Brief / デイリー・インテリジェンス・ブリーフ
 
-## 中文
+## English
 
-一个每天自动生成新闻摘要的小型 agent。它会抓取 RSS 新闻源，去重、排序，并同时生成中文版和英文版 Markdown 日报。
+A scheduled news-intelligence service that collects public news sources, removes duplicates, ranks stories, and produces Japanese and English daily briefings. It also generates a Gmail-friendly HTML email brief with concise article cards and links to the complete reports.
 
-默认输出：
+### Outputs
 
 ```text
 reports/ja/YYYY-MM-DD.md
@@ -13,13 +13,82 @@ reports/email/YYYY-MM-DD.html
 reports/email/YYYY-MM-DD.txt
 ```
 
-默认行为：
+### What it does
 
-- 每天日本时间 07:00 通过 GitHub Actions 自动运行
-- 优先使用 OpenAI 生成更自然的日英双语摘要
-- 没有 `OPENAI_API_KEY` 时自动退回到本地规则摘要
-- 自动把当天日报提交回仓库
-- 生成适合邮件发送的日英双语 HTML Brief 与纯文本备用版本
+- Runs daily in Japan Standard Time through GitHub Actions
+- Uses OpenAI to produce Japanese and English summaries from the collected source material
+- Falls back to source-language excerpts when `OPENAI_API_KEY` is unavailable
+- Ranks and deduplicates stories, then commits the generated reports back to the repository
+- Creates a responsive HTML briefing: 10 article cards per language, each with a title, summary, source, date, and source link
+
+### Run locally
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install .
+daily-news-agent
+```
+
+### Enable OpenAI summaries
+
+Copy the environment template:
+
+```bash
+cp .env.example .env
+```
+
+Then configure:
+
+```text
+OPENAI_API_KEY=your_key
+OPENAI_MODEL=gpt-4.1-mini
+NEWS_AGENT_LANGUAGES=ja,en
+```
+
+For GitHub Actions, add `OPENAI_API_KEY` under **Settings → Secrets and variables → Actions**. Do not commit API keys to the repository.
+
+### News sources
+
+Edit [config/feeds.json](config/feeds.json) to change the source mix. Each source supports:
+
+- `name`: display name
+- `url`: RSS endpoint or API base URL
+- `kind`: `rss` (default) or `hacker_news`
+- `section`: grouping such as `japan`, `world`, or `tech`
+- `weight`: ranking preference; a higher value ranks earlier
+
+The default mix includes Japanese, world, and technology sources, plus the official Hacker News API.
+
+### Run manually on GitHub
+
+1. Open **Actions** in this repository.
+2. Select **Daily News Agent**.
+3. Choose **Run workflow**.
+
+---
+
+## 中文
+
+这是一个定时运行的新闻情报服务：它抓取公开新闻来源、去重并排序，生成日文和英文日报，同时输出一份适合 Gmail 阅读的 HTML 邮件简报。邮件中每种语言展示 10 条新闻卡片，并保留完整日报与原文链接。
+
+### 输出文件
+
+```text
+reports/ja/YYYY-MM-DD.md
+reports/en/YYYY-MM-DD.md
+reports/email/YYYY-MM-DD.html
+reports/email/YYYY-MM-DD.txt
+```
+
+### 功能
+
+- 通过 GitHub Actions 按日本时间每日运行
+- 使用 OpenAI 基于抓取内容生成日文与英文摘要
+- 未配置 `OPENAI_API_KEY` 时，回退到新闻源原文摘录
+- 对新闻进行去重、排序，并把生成结果提交回仓库
+- 生成响应式 HTML 邮件简报：每种语言 10 条新闻卡片，包含标题、摘要、来源、日期与原文链接
 
 ### 本地运行
 
@@ -31,7 +100,7 @@ pip install .
 daily-news-agent
 ```
 
-### 使用 OpenAI 摘要
+### 启用 OpenAI 摘要
 
 复制环境变量模板：
 
@@ -47,140 +116,22 @@ OPENAI_MODEL=gpt-4.1-mini
 NEWS_AGENT_LANGUAGES=ja,en
 ```
 
-也可以不填 API key，agent 会使用本地摘要模式。本地模式会保留新闻源原文；配置 API key 后会生成更完整的中英双语摘要。
+如需在 GitHub Actions 中启用摘要，请在仓库 **Settings → Secrets and variables → Actions** 中添加 `OPENAI_API_KEY`。不要把密钥提交到仓库。
 
-### 修改新闻源
+### 新闻来源
 
-编辑 [config/feeds.json](config/feeds.json)。每个新闻源支持：
+编辑 [config/feeds.json](config/feeds.json) 即可调整来源。每个来源支持：
 
-- `name`: 显示名称
-- `url`: RSS 地址
-- `section`: 分组，例如 `world`、`japan`、`tech`
-- `weight`: 排序权重，越高越容易排在前面
+- `name`：显示名称
+- `url`：RSS 地址或 API 基础地址
+- `kind`：`rss`（默认）或 `hacker_news`
+- `section`：分类，例如 `japan`、`world`、`tech`
+- `weight`：排序权重，数值越高越优先
 
-### GitHub Actions 设置
+默认来源覆盖日本、国际与科技新闻，并接入 Hacker News 官方 API。
 
-仓库上传到 GitHub 后，如需使用 OpenAI 摘要：
+### 在 GitHub 手动运行
 
-1. 打开仓库的 `Settings`
-2. 进入 `Secrets and variables` -> `Actions`
-3. 新增 secret：`OPENAI_API_KEY`
-
-不设置 secret 也能运行，只是摘要会更简洁。
-
-### 手动触发
-
-在 GitHub 仓库页面：
-
-1. 打开 `Actions`
-2. 选择 `Daily News Agent`
-3. 点击 `Run workflow`
-
-## English
-
-A small daily news agent that collects RSS feeds, deduplicates and ranks articles, then generates both Japanese and English Markdown digests.
-
-Default output:
-
-```text
-reports/zh/YYYY-MM-DD.md
-reports/en/YYYY-MM-DD.md
-```
-
-Default behavior:
-
-- Runs automatically at 07:00 Japan Standard Time via GitHub Actions
-- Uses OpenAI first for richer bilingual summaries
-- Falls back to local rule-based summaries when `OPENAI_API_KEY` is not configured
-- Commits the generated daily reports back to the repository
-
-### Run Locally
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install .
-daily-news-agent
-```
-
-### OpenAI Summaries
-
-Copy the environment template:
-
-```bash
-cp .env.example .env
-```
-
-Then fill in:
-
-```text
-OPENAI_API_KEY=your_key
-OPENAI_MODEL=gpt-4.1-mini
-NEWS_AGENT_LANGUAGES=zh,en
-```
-
-The agent can run without an API key, but local fallback summaries keep the original source language. Configure `OPENAI_API_KEY` for fuller Chinese and English summaries.
-
-### Edit News Sources
-
-Edit [config/feeds.json](config/feeds.json). Each source supports:
-
-- `name`: display name
-- `url`: RSS feed URL
-- `section`: grouping, such as `world`, `japan`, or `tech`
-- `weight`: ranking weight; higher values rank earlier
-
-### GitHub Actions Setup
-
-To enable OpenAI summaries on GitHub:
-
-1. Open repository `Settings`
-2. Go to `Secrets and variables` -> `Actions`
-3. Add a secret named `OPENAI_API_KEY`
-
-The workflow still runs without the secret, using local fallback summaries.
-
-### Manual Run
-
-On GitHub:
-
-1. Open `Actions`
-2. Select `Daily News Agent`
-3. Click `Run workflow`
-
-### Output Example
-
-```markdown
-# 每日新闻总结 - 2026-06-15
-
-## 今日重点
-
-- ...
-
-## Japan
-
-### 新闻标题
-
-摘要内容
-
-来源: NHK News
-链接: https://...
-```
-
-```markdown
-# Daily News Digest - 2026-06-15
-
-## Highlights
-
-- ...
-
-## Japan
-
-### News Title
-
-Summary text.
-
-Source: NHK News
-Link: https://...
-```
+1. 打开仓库的 **Actions** 页面。
+2. 选择 **Daily News Agent**。
+3. 点击 **Run workflow**。
