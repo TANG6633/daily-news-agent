@@ -34,12 +34,12 @@ class EmailRenderTest(unittest.TestCase):
 
         html = render_email_html(japanese, english)
 
-        self.assertIn("DAILY INTELLIGENCE BRIEF", html)
+        self.assertIn("Daily Intelligence Brief", html)
         self.assertIn("日本語版", html)
         self.assertIn("ENGLISH EDITION", html)
-        self.assertIn("&lt;unsafe&gt;", html)
         self.assertIn("reports/ja/2026-07-10.md", html)
         self.assertIn("reports/en/2026-07-10.md", html)
+        self.assertIn("Sample &lt;story&gt;", html)
 
     def test_plain_text_fallback_contains_both_languages(self):
         text = render_email_text(_digest("ja", ["日本語の重要事項"]), _digest("en", ["English key signal"]))

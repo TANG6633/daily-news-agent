@@ -1,5 +1,5 @@
 from html import escape
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 from .models import Digest
 
@@ -22,8 +22,8 @@ def render_email_html(japanese: Digest, english: Digest) -> str:
     <tr><td align="center" style="padding:28px 12px;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:680px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,0.08);">
         <tr><td style="padding:34px 36px 30px;background:#101b32;color:#ffffff;">
-          <div style="font-size:11px;letter-spacing:1.5px;font-weight:700;color:#9cc7ff;">DAILY INTELLIGENCE BRIEF</div>
-          <div style="margin-top:9px;font-size:27px;line-height:1.25;font-weight:700;">デイリー・インテリジェンス・ブリーフ</div>
+          <div style="font-size:29px;line-height:1.25;font-weight:700;">Daily Intelligence Brief</div>
+          <div style="margin-top:8px;font-size:13px;line-height:1.5;color:#c8d6ee;">Japanese &amp; English edition</div>
           <div style="margin-top:12px;font-size:14px;line-height:1.5;color:#c8d6ee;">{date} &nbsp;·&nbsp; {generated} &nbsp;·&nbsp; {sources} sources</div>
         </td></tr>
         <tr><td style="padding:28px 28px 6px;">
@@ -43,16 +43,16 @@ def render_email_html(japanese: Digest, english: Digest) -> str:
         sources=source_count,
         japanese_section=_language_section(
             kicker="日本語版",
-            title="今日の重要ポイント",
-            highlights=japanese.highlights,
+            title="Today’s news summaries",
+            digest=japanese,
             button_label="レポートを開く",
             button_url=report_urls["ja"],
             accent="#2563eb",
         ),
         english_section=_language_section(
             kicker="ENGLISH EDITION",
-            title="Key signals today",
-            highlights=english.highlights,
+            title="Today’s news summaries",
+            digest=english,
             button_label="Open full report",
             button_url=report_urls["en"],
             accent="#0f766e",
@@ -67,11 +67,11 @@ def render_email_text(japanese: Digest, english: Digest) -> str:
         "DAILY INTELLIGENCE BRIEF / デイリー・インテリジェンス・ブリーフ",
         japanese.date,
         "",
-        "日本語版｜今日の重要ポイント",
+        "日本語版｜Today’s news summaries",
     ]
-    lines.extend("- %s" % item for item in japanese.highlights)
-    lines.extend(["", "English edition | Key signals today"])
-    lines.extend("- %s" % item for item in english.highlights)
+    lines.extend(_text_articles(japanese))
+    lines.extend(["", "English edition | Today’s news summaries"])
+    lines.extend(_text_articles(english))
     lines.extend(
         [
             "",
@@ -86,19 +86,31 @@ def render_email_text(japanese: Digest, english: Digest) -> str:
 def _language_section(
     kicker: str,
     title: str,
-    highlights: Iterable[str],
+    digest: Digest,
     button_label: str,
     button_url: str,
     accent: str,
 ) -> str:
     items: List[str] = []
-    for index, highlight in enumerate(list(highlights)[:5], 1):
+    for index, article in enumerate(list(digest.articles)[:10], 1):
+        summary = digest.article_summaries.get(article.url, article.summary) or "Summary unavailable."
+        published = article.published_at.date().isoformat() if article.published_at else ""
         items.append(
-            "<tr><td style=\"padding:0 0 12px;vertical-align:top;\">"
+            "<tr><td style=\"padding:0 0 18px;vertical-align:top;border-bottom:1px solid #edf0f5;\">"
             "<span style=\"display:inline-block;width:21px;height:21px;line-height:21px;border-radius:50%;"
             "background:{accent};color:#ffffff;text-align:center;font-size:11px;font-weight:700;\">{index}</span>"
-            "<span style=\"padding-left:10px;font-size:14px;line-height:1.55;color:#25324a;\">{highlight}</span>"
-            "</td></tr>".format(accent=accent, index=index, highlight=escape(highlight))
+            "<a href=\"{url}\" style=\"padding-left:10px;font-size:15px;line-height:1.45;color:#172033;text-decoration:none;font-weight:700;\">{article_title}</a>"
+            "<div style=\"padding:7px 0 0 31px;font-size:13px;line-height:1.55;color:#4e5b70;\">{summary}</div>"
+            "<div style=\"padding:7px 0 0 31px;font-size:11px;color:#7b8799;\">{source}{published}</div>"
+            "</td></tr>".format(
+                accent=accent,
+                index=index,
+                url=escape(article.url, quote=True),
+                article_title=escape(article.title),
+                summary=escape(summary),
+                source=escape(article.source),
+                published=" · %s" % escape(published) if published else "",
+            )
         )
 
     return """
@@ -126,3 +138,11 @@ def _report_urls(report_date: str) -> Dict[str, str]:
         language: _REPORT_URL.format(language=language, date=report_date)
         for language in ("ja", "en")
     }
+
+
+def _text_articles(digest: Digest) -> List[str]:
+    lines = []
+    for index, article in enumerate(list(digest.articles)[:10], 1):
+        summary = digest.article_summaries.get(article.url, article.summary) or "Summary unavailable."
+        lines.extend(["%s. %s" % (index, article.title), "   %s" % summary, "   %s" % article.url])
+    return lines

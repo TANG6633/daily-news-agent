@@ -1,6 +1,8 @@
 import html
 import calendar
+import json
 import re
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -33,6 +35,13 @@ def collect_articles(
 
 
 def fetch_feed(source: SourceConfig, max_per_source: int = 20) -> List[Article]:
+    if source.kind == "hacker_news":
+        return _fetch_hacker_news(source, max_per_source)
+    if source.kind == "gdelt":
+        return _fetch_gdelt(source, max_per_source)
+    if source.kind != "rss":
+        raise ValueError("unsupported source kind: %s" % source.kind)
+
     request = urllib.request.Request(
         source.url,
         headers={
@@ -75,6 +84,77 @@ def fetch_feed(source: SourceConfig, max_per_source: int = 20) -> List[Article]:
         )
 
     return articles
+
+
+def _fetch_hacker_news(source: SourceConfig, max_per_source: int) -> List[Article]:
+    base_url = source.url.rstrip("/")
+    story_ids = _fetch_json("%s/topstories.json" % base_url)[:max_per_source]
+    articles = []
+    for story_id in story_ids:
+        item = _fetch_json("%s/item/%s.json" % (base_url, story_id))
+        if item.get("type") != "story" or not item.get("title"):
+            continue
+        url = str(item.get("url") or "https://news.ycombinator.com/item?id=%s" % story_id)
+        score = item.get("score", 0)
+        comments = item.get("descendants", 0)
+        articles.append(
+            Article(
+                title=_clean_text(item["title"]),
+                url=url,
+                source=source.name,
+                section=source.section,
+                summary="%s points · %s comments" % (score, comments),
+                published_at=datetime.fromtimestamp(item.get("time", 0), tz=timezone.utc),
+                weight=source.weight,
+            )
+        )
+    return articles
+
+
+def _fetch_gdelt(source: SourceConfig, max_per_source: int) -> List[Article]:
+    query = source.query or "Japan OR technology OR \"artificial intelligence\""
+    parameters = urllib.parse.urlencode(
+        {
+            "query": query,
+            "mode": "artlist",
+            "format": "json",
+            "maxrecords": max_per_source,
+            "timespan": "30h",
+            "sort": "datedesc",
+        }
+    )
+    payload = _fetch_json("%s?%s" % (source.url, parameters))
+    articles = []
+    for item in payload.get("articles", []):
+        title = _clean_text(item.get("title", ""))
+        url = str(item.get("url", "")).strip()
+        if not title or not url:
+            continue
+        domain = str(item.get("domain", "")).strip()
+        articles.append(
+            Article(
+                title=title,
+                url=url,
+                source="%s%s" % (source.name, " · %s" % domain if domain else ""),
+                section=source.section,
+                published_at=_gdelt_datetime(str(item.get("seendate", ""))),
+                weight=source.weight,
+            )
+        )
+    return articles
+
+
+def _fetch_json(url: str):
+    request = urllib.request.Request(url, headers={"User-Agent": "daily-news-agent/0.1"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        return json.loads(response.read(2_500_000).decode("utf-8"))
+
+
+def _gdelt_datetime(value: str) -> Optional[datetime]:
+    try:
+        return datetime.strptime(value, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
 
 def dedupe_articles(articles: Iterable[Article]) -> List[Article]:
