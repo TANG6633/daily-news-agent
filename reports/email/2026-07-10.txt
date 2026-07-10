@@ -1,0 +1,17 @@
+DAILY INTELLIGENCE BRIEF / デイリー・インテリジェンス・ブリーフ
+2026-07-10
+
+日本語版｜今日の重要ポイント
+- 日本では皇室典範改正案が衆議院で可決され今国会で成立する見通しで、科学医療分野では大阪大学でiPS細胞による角膜治療の臨床試験が開始された。
+- 沖縄や九州を中心に台風や高潮の厳重警戒が続き、猛暑も東北まで広がっている一方、ベネズエラ大地震の救助活動やスペイン山火事の死者多数など自然災害被害が続く。
+- 国際情勢では中東の緊張が続くホルムズ海峡の船舶通過が増加し、途上国の教育予算が借金返済に上回られている問題も明らかとなった。
+
+English edition | Key signals today
+- Japan is advancing significant national policies and technological innovations, with the Imperial House Law amendment passing the House of Representatives and pioneering iPS cell treatment beginning clinical trials.
+- Severe weather threats intensify in Japan's southern regions, as Typhoon Bavi approaches the southwestern islands alongside local flood and storm evacuation orders.
+- Internationally, crises continue with Venezuela's earthquake rescue efforts hampered by missing people, a deadly wildfire in Spain, and social strains like developing countries spending more on debt than education.
+- Recent legal and social tensions are highlighted by an Osaka prosecutor's trial and a suspicious teenager's death in Australia.
+- Economic and cultural developments in Japan include a surprising yen rise tied to domestic investment calls and a major exhibition recognizing Japanese women photographers.
+
+日本語版: https://github.com/TANG6633/daily-news-agent/blob/main/reports/ja/2026-07-10.md
+English version: https://github.com/TANG6633/daily-news-agent/blob/main/reports/en/2026-07-10.md
