@@ -9,6 +9,8 @@
 ```text
 reports/ja/YYYY-MM-DD.md
 reports/en/YYYY-MM-DD.md
+reports/email/YYYY-MM-DD.html
+reports/email/YYYY-MM-DD.txt
 ```
 
 默认行为：
@@ -17,6 +19,7 @@ reports/en/YYYY-MM-DD.md
 - 优先使用 OpenAI 生成更自然的日英双语摘要
 - 没有 `OPENAI_API_KEY` 时自动退回到本地规则摘要
 - 自动把当天日报提交回仓库
+- 生成适合邮件发送的日英双语 HTML Brief 与纯文本备用版本
 
 ### 本地运行
 
