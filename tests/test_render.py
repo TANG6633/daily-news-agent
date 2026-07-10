@@ -6,7 +6,7 @@ from news_agent.render import render_markdown
 
 
 class RenderMarkdownTest(unittest.TestCase):
-    def test_render_contains_chinese_sections_and_links(self):
+    def test_render_contains_japanese_sections_and_links(self):
         article = Article(
             title="Sample title",
             url="https://example.com/story",
@@ -16,11 +16,11 @@ class RenderMarkdownTest(unittest.TestCase):
             published_at=datetime(2026, 6, 15, tzinfo=timezone.utc),
         )
         digest = Digest(
-            title="每日新闻总结",
+            title="デイリー・インテリジェンス・ブリーフ",
             date="2026-06-15",
             generated_at=datetime(2026, 6, 15, 7, 0, tzinfo=timezone.utc),
             timezone="Asia/Tokyo",
-            language="zh",
+            language="ja",
             highlights=["Important item"],
             article_summaries={article.url: "Rendered summary."},
             articles=[article],
@@ -29,10 +29,10 @@ class RenderMarkdownTest(unittest.TestCase):
 
         markdown = render_markdown(digest)
 
-        self.assertIn("# 每日新闻总结 - 2026-06-15", markdown)
-        self.assertIn("## 今日重点", markdown)
+        self.assertIn("# デイリー・インテリジェンス・ブリーフ - 2026-06-15", markdown)
+        self.assertIn("## 今日の重要ポイント", markdown)
         self.assertIn("Rendered summary.", markdown)
-        self.assertIn("[阅读全文](https://example.com/story)", markdown)
+        self.assertIn("[続きを読む](https://example.com/story)", markdown)
 
     def test_render_contains_english_sections_and_links(self):
         article = Article(

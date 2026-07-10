@@ -1,10 +1,10 @@
 {
-  "title": "每日新闻总结",
+  "title": "Daily Intelligence Brief",
   "titles": {
-    "zh": "每日新闻总结",
-    "en": "Daily News Digest"
+    "ja": "デイリー・インテリジェンス・ブリーフ",
+    "en": "Daily Intelligence Brief"
   },
-  "languages": ["zh", "en"],
+  "languages": ["ja", "en"],
   "timezone": "Asia/Tokyo",
   "lookback_hours": 30,
   "max_items": 18,
