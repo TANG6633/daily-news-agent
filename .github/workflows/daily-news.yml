@@ -31,7 +31,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
           NEWS_AGENT_TIMEZONE: Asia/Tokyo
-          NEWS_AGENT_LANGUAGES: zh,en
+          NEWS_AGENT_LANGUAGES: ja,en
         run: daily-news-agent
 
       - name: Commit digest

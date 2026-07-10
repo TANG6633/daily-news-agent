@@ -46,7 +46,7 @@ def _load_languages(raw: Dict[str, Any]) -> List[str]:
     if env_value:
         languages = [part.strip() for part in env_value.split(",")]
     else:
-        configured = raw.get("languages", raw.get("language", ["zh", "en"]))
+        configured = raw.get("languages", raw.get("language", ["ja", "en"]))
         if isinstance(configured, str):
             languages = [configured]
         else:
@@ -65,6 +65,6 @@ def _load_titles(raw: Dict[str, Any]) -> Dict[str, str]:
 
     title = str(raw.get("title", "Daily News Digest"))
     return {
-        "zh": title if title != "Daily News Digest" else "每日新闻总结",
+        "ja": title if title != "Daily News Digest" else "デイリー・ニュース・ダイジェスト",
         "en": "Daily News Digest",
     }

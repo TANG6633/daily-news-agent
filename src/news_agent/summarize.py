@@ -100,7 +100,7 @@ def _call_openai(client: object, model: str, prompt: str) -> str:
 def _summarize_locally(articles: Sequence[Article], language: str) -> Tuple[List[str], Dict[str, str]]:
     highlights = []
     for article in articles[:5]:
-        if language == "zh":
+        if language == "ja":
             highlights.append("%s：%s" % (article.source, _shorten(article.title, 90)))
         else:
             highlights.append("%s: %s" % (article.source, _shorten(article.title, 90)))
@@ -115,26 +115,26 @@ def _summarize_locally(articles: Sequence[Article], language: str) -> Tuple[List
 
 def _language_name(language: str) -> str:
     return {
-        "zh": "Simplified Chinese",
+        "ja": "Japanese",
         "en": "English",
     }.get(language, language)
 
 
 def _empty_highlight(language: str) -> str:
-    if language == "zh":
-        return "今天没有抓取到符合条件的新闻。"
+    if language == "ja":
+        return "本日は条件に合うニュースを取得できませんでした。"
     return "No eligible news articles were collected today."
 
 
 def _local_note(language: str) -> str:
-    if language == "zh":
-        return "本地摘要模式；设置 OPENAI_API_KEY 可生成更完整的双语摘要"
+    if language == "ja":
+        return "ローカル要約モード：より自然な日英要約には OPENAI_API_KEY を設定してください"
     return "local fallback; set OPENAI_API_KEY for richer bilingual summaries"
 
 
 def _fallback_note(language: str, error: str) -> str:
-    if language == "zh":
-        return "OpenAI 摘要失败，已使用本地摘要模式：%s" % error
+    if language == "ja":
+        return "OpenAI 要約に失敗したためローカル要約を使用しました：%s" % error
     return "OpenAI summary failed; used local fallback: %s" % error
 
 

@@ -7,14 +7,14 @@
 默认输出：
 
 ```text
-reports/zh/YYYY-MM-DD.md
+reports/ja/YYYY-MM-DD.md
 reports/en/YYYY-MM-DD.md
 ```
 
 默认行为：
 
 - 每天日本时间 07:00 通过 GitHub Actions 自动运行
-- 优先使用 OpenAI 生成更自然的中英双语摘要
+- 优先使用 OpenAI 生成更自然的日英双语摘要
 - 没有 `OPENAI_API_KEY` 时自动退回到本地规则摘要
 - 自动把当天日报提交回仓库
 
@@ -41,7 +41,7 @@ cp .env.example .env
 ```text
 OPENAI_API_KEY=你的_key
 OPENAI_MODEL=gpt-4.1-mini
-NEWS_AGENT_LANGUAGES=zh,en
+NEWS_AGENT_LANGUAGES=ja,en
 ```
 
 也可以不填 API key，agent 会使用本地摘要模式。本地模式会保留新闻源原文；配置 API key 后会生成更完整的中英双语摘要。
@@ -75,7 +75,7 @@ NEWS_AGENT_LANGUAGES=zh,en
 
 ## English
 
-A small daily news agent that collects RSS feeds, deduplicates and ranks articles, then generates both Chinese and English Markdown digests.
+A small daily news agent that collects RSS feeds, deduplicates and ranks articles, then generates both Japanese and English Markdown digests.
 
 Default output:
 

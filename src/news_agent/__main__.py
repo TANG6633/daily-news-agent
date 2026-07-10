@@ -82,7 +82,7 @@ def _load_dotenv() -> None:
 def _title_for_language(titles: object, language: str) -> str:
     if isinstance(titles, dict) and language in titles:
         return str(titles[language])
-    return "每日新闻总结" if language == "zh" else "Daily News Digest"
+    return "デイリー・ニュース・ダイジェスト" if language == "ja" else "Daily News Digest"
 
 
 if __name__ == "__main__":

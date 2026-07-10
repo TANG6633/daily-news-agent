@@ -68,17 +68,17 @@ def _render_article(article: Article, summary: str, language: str) -> List[str]:
 
 def _label(language: str, key: str) -> str:
     labels = {
-        "zh": {
-            "generated": "生成时间",
-            "summary_mode": "摘要模式",
-            "highlights": "今日重点",
-            "details": "新闻详情",
-            "fetch_notes": "抓取提示",
-            "sources": "来源列表",
-            "source": "来源",
-            "read_more": "阅读全文",
-            "published": "发布时间",
-            "no_summary": "暂无摘要。",
+        "ja": {
+            "generated": "生成日時",
+            "summary_mode": "要約モード",
+            "highlights": "今日の重要ポイント",
+            "details": "ニュース詳細",
+            "fetch_notes": "取得に関する注意",
+            "sources": "情報源",
+            "source": "情報源",
+            "read_more": "続きを読む",
+            "published": "公開日",
+            "no_summary": "要約はありません。",
         },
         "en": {
             "generated": "Generated",
@@ -98,11 +98,11 @@ def _label(language: str, key: str) -> str:
 
 def _section_label(language: str, section: str) -> str:
     labels = {
-        "zh": {
+        "ja": {
             "japan": "日本",
-            "world": "国际",
-            "tech": "科技",
-            "general": "综合",
+            "world": "国際",
+            "tech": "テクノロジー",
+            "general": "総合",
         },
         "en": {
             "japan": "Japan",
@@ -115,6 +115,6 @@ def _section_label(language: str, section: str) -> str:
 
 
 def _source_table_header(language: str) -> str:
-    if language == "zh":
-        return "| 来源 | 分类 | 链接 |"
+    if language == "ja":
+        return "| 情報源 | 分類 | リンク |"
     return "| Source | Section | URL |"
