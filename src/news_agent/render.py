@@ -8,23 +8,36 @@ def render_markdown(digest: Digest) -> str:
     lines: List[str] = [
         "# %s - %s" % (digest.title, digest.date),
         "",
-        "- %s: %s (%s)" % (_label(digest.language, "generated"), digest.generated_at.isoformat(timespec="seconds"), digest.timezone),
-        "- %s: %s" % (_label(digest.language, "summary_mode"), digest.summary_note),
+        "---",
+        "",
+        "- **%s**: %s (%s)" % (
+            _label(digest.language, "generated"),
+            digest.generated_at.isoformat(timespec="seconds"),
+            digest.timezone,
+        ),
+        "- **%s**: %s" % (_label(digest.language, "summary_mode"), digest.summary_note),
         "",
         "## %s" % _label(digest.language, "highlights"),
         "",
     ]
 
-    for highlight in digest.highlights:
-        lines.append("- %s" % highlight)
+    for idx, highlight in enumerate(digest.highlights, 1):
+        lines.append("%s. %s" % (idx, highlight))
 
     lines.extend(["", "## %s" % _label(digest.language, "details"), ""])
 
     grouped = _group_by_section(digest.articles)
     for section, articles in grouped.items():
         lines.extend(["### %s" % _section_label(digest.language, section), ""])
-        for article in articles:
-            lines.extend(_render_article(article, digest.article_summaries.get(article.url, article.summary), digest.language))
+        for idx, article in enumerate(articles, 1):
+            lines.extend(
+                _render_article(
+                    idx,
+                    article,
+                    digest.article_summaries.get(article.url, article.summary),
+                    digest.language,
+                )
+            )
 
     if digest.fetch_errors:
         lines.extend(["## %s" % _label(digest.language, "fetch_notes"), ""])
@@ -49,19 +62,16 @@ def _group_by_section(articles: List[Article]) -> Dict[str, List[Article]]:
     return dict(grouped)
 
 
-def _render_article(article: Article, summary: str, language: str) -> List[str]:
+def _render_article(index: int, article: Article, summary: str, language: str) -> List[str]:
     published = ""
     if article.published_at is not None:
         published = " | %s: %s" % (_label(language, "published"), article.published_at.date().isoformat())
 
     return [
-        "#### %s" % article.title,
-        "",
-        summary or _label(language, "no_summary"),
-        "",
-        "%s: %s%s" % (_label(language, "source"), article.source, published),
-        "",
-        "[%s](%s)" % (_label(language, "read_more"), article.url),
+        "%s) %s" % (index, article.title),
+        "   - %s" % (summary or _label(language, "no_summary")),
+        "   - %s: %s%s" % (_label(language, "source"), article.source, published),
+        "   - %s: [%s](%s)" % (_label(language, "read_more"), _label(language, "read_more"), article.url),
         "",
     ]
 
@@ -101,12 +111,14 @@ def _section_label(language: str, section: str) -> str:
         "ja": {
             "japan": "日本",
             "world": "国際",
+            "global": "グローバル",
             "tech": "テクノロジー",
             "general": "総合",
         },
         "en": {
             "japan": "Japan",
             "world": "World",
+            "global": "Global",
             "tech": "Technology",
             "general": "General",
         },

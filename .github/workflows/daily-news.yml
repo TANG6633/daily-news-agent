@@ -32,7 +32,37 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
           NEWS_AGENT_TIMEZONE: Asia/Tokyo
           NEWS_AGENT_LANGUAGES: ja,en
-        run: daily-news-agent
+          TZ: Asia/Tokyo
+        run: |
+          set -euo pipefail
+          TODAY=$(TZ=Asia/Tokyo date +%F)
+          export TODAY
+          echo "Expect report date: ${TODAY}"
+          daily-news-agent | tee /tmp/daily-news-agent.log
+          python - <<'PY'
+          import os
+          import pathlib
+          today = os.environ["TODAY"]
+          root = pathlib.Path("reports")
+          missing = []
+          for language in ("ja", "en"):
+              if not (root / language / f"{today}.md").exists():
+                  missing.append(f"{language}/{today}.md")
+          if missing:
+              raise SystemExit(f"Missing report files: {', '.join(missing)}")
+          print("Generated report files:")
+          for language in ("ja", "en"):
+              path = root / language / f"{today}.md"
+              print(f"- {path}")
+          PY
+
+      - name: Upload report artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: daily-news-reports-${{ github.run_id }}
+          path: reports
+          if-no-files-found: error
 
       - name: Commit digest
         run: |
