@@ -35,16 +35,41 @@
       "weight": 1.0
     },
     {
+      "name": "NPR News",
+      "url": "https://feeds.npr.org/1001/rss.xml",
+      "section": "world",
+      "weight": 0.95
+    },
+    {
+      "name": "CNN World",
+      "url": "http://rss.cnn.com/rss/edition_world.rss",
+      "section": "world",
+      "weight": 0.9
+    },
+    {
       "name": "TechCrunch",
       "url": "https://techcrunch.com/feed/",
       "section": "tech",
       "weight": 1.0
     },
     {
-      "name": "Hacker News",
-      "url": "https://hnrss.org/frontpage",
+      "name": "The Verge",
+      "url": "https://www.theverge.com/rss/index.xml",
       "section": "tech",
-      "weight": 0.8
+      "weight": 0.9
+    },
+    {
+      "name": "Ars Technica",
+      "url": "https://feeds.arstechnica.com/arstechnica/index",
+      "section": "tech",
+      "weight": 0.85
+    },
+    {
+      "name": "Hacker News API",
+      "url": "https://hacker-news.firebaseio.com/v0",
+      "kind": "hacker_news",
+      "section": "tech",
+      "weight": 0.95
     }
   ]
 }

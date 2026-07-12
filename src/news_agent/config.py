@@ -36,6 +36,8 @@ def _source_from_dict(item: Dict[str, Any]) -> SourceConfig:
     return SourceConfig(
         name=name,
         url=url,
+        kind=str(item.get("kind", "rss")).strip() or "rss",
+        query=str(item.get("query", "")).strip(),
         section=str(item.get("section", "general")).strip() or "general",
         weight=float(item.get("weight", 1.0)),
     )

@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 class SourceConfig:
     name: str
     url: str
+    kind: str = "rss"
+    query: str = ""
     section: str = "general"
     weight: float = 1.0
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .config import load_config
+from .email_render import render_email_html, render_email_text
 from .fetch import collect_articles, rank_articles
 from .models import Digest
 from .render import render_markdown
@@ -34,6 +35,7 @@ def main() -> int:
     )
     ranked = rank_articles(articles, limit=config.max_items)
     rendered = []
+    digests = {}
     for language in config.languages:
         highlights, summaries, summary_note = summarize_articles(
             ranked,
@@ -53,6 +55,7 @@ def main() -> int:
             fetch_errors=fetch_errors,
             summary_note=summary_note,
         )
+        digests[language] = digest
         rendered.append((language, render_markdown(digest)))
 
     if args.dry_run:
@@ -68,6 +71,15 @@ def main() -> int:
         output_path = language_dir / ("%s.md" % report_date)
         output_path.write_text(markdown, encoding="utf-8")
         print("Wrote %s with %s articles." % (output_path, len(ranked)))
+
+    if {"ja", "en"}.issubset(digests):
+        email_dir = output_dir / "email"
+        email_dir.mkdir(parents=True, exist_ok=True)
+        html_path = email_dir / ("%s.html" % report_date)
+        text_path = email_dir / ("%s.txt" % report_date)
+        html_path.write_text(render_email_html(digests["ja"], digests["en"]), encoding="utf-8")
+        text_path.write_text(render_email_text(digests["ja"], digests["en"]), encoding="utf-8")
+        print("Wrote %s and %s." % (html_path, text_path))
     return 0
 
 
